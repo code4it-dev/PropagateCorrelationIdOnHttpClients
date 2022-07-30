@@ -9,7 +9,7 @@ namespace PropagateCorrelationIdOnHttpClients
         public static IServiceCollection AddHeaderPropagation(this IServiceCollection services, Action<HeaderPropagationOptions> configure)
         {
             services.AddHttpContextAccessor();
-            services.Configure(configure);
+            services.ConfigureAll(configure);
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpMessageHandlerBuilderFilter, HeaderPropagationMessageHandlerBuilderFilter>());
             return services;
         }
@@ -17,13 +17,13 @@ namespace PropagateCorrelationIdOnHttpClients
         public static IHttpClientBuilder AddHeaderPropagation(this IHttpClientBuilder builder, Action<HeaderPropagationOptions> configure)
         {
             builder.Services.AddHttpContextAccessor();
-            builder.Services.Configure(configure);
+            builder.Services.Configure(builder.Name, configure);
             builder.AddHttpMessageHandler((sp) =>
             {
-                var options = sp.GetRequiredService<IOptions<HeaderPropagationOptions>>();
+                var options = sp.GetRequiredService<IOptionsMonitor<HeaderPropagationOptions>>();
                 var contextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
 
-                return new HeaderPropagationMessageHandler(options.Value, contextAccessor);
+                return new HeaderPropagationMessageHandler(options.Get(builder.Name), contextAccessor);
             });
 
             return builder;

@@ -17,12 +17,16 @@ namespace PropagateCorrelationIdOnHttpClients.Controllers
 
         // POST api/<ValuesController>
         [HttpPost]
-        public async Task<IActionResult> PostAsync([FromBody] string value)
+        public async Task<IActionResult> PostAsync([FromQuery] string value)
         {
             var item = new Item(value);
 
             var httpClient = _httpClientFactory.CreateClient("items");
             await httpClient.PostAsJsonAsync("/", item);
+
+            var httpClient2 = _httpClientFactory.CreateClient("items2");
+            await httpClient2.PostAsJsonAsync("/", item);
+
             return NoContent();
         }
     }
